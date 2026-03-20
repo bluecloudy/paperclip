@@ -123,7 +123,7 @@ export function parseGeminiJsonl(stdout: string) {
 
     if (type === "result") {
       resultEvent = event;
-      accumulateUsage(usage, event.usage ?? event.usageMetadata);
+      accumulateUsage(usage, event.usage ?? event.usageMetadata ?? event.stats);
       const resultText =
         asString(event.result, "").trim() ||
         asString(event.text, "").trim() ||
@@ -149,6 +149,15 @@ export function parseGeminiJsonl(stdout: string) {
       if (subtype === "error") {
         const text = asErrorText(event.error ?? event.message ?? event.detail).trim();
         if (text) errorMessage = text;
+      }
+      continue;
+    }
+
+    if (type === "message") {
+      const role = asString(event.role, "").trim();
+      if (role === "assistant") {
+        const text = asString(event.content, "").trim();
+        if (text) messages.push(text);
       }
       continue;
     }
